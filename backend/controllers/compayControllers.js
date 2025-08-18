@@ -167,10 +167,23 @@ export const getCompanyData = async (req, res, next) => {
   }
 };
 
-export const getUniqueDataLocations=async(req,res,next)=>{
+export const getUniqueDataLocations = async (req, res, next) => {
   try {
-    
+    const companies = await Company.find().lean().exec();
+
+    const locations = companies.map((company) => ({
+      country: company.country,
+      state: company.state,
+    }));
+
+    const uniqueSet = new Set(locations.map((loc) => JSON.stringify(loc)));
+
+    const finalizedLocations = Array.from(uniqueSet).map((loc) =>
+      JSON.parse(loc)
+    );
+
+    return res.status(200).json(finalizedLocations);
   } catch (error) {
-    next(error)
+    next(error);
   }
-}
+};
