@@ -3,6 +3,7 @@ import Review from "../models/Reviews.js";
 import PointOfContact from "../models/PointOfContact.js";
 import { Readable } from "stream";
 import csvParser from "csv-parser";
+import { uploadFileToS3 } from "../config/s3Config.js";
 
 export const bulkInsertCompanies = async (req, res, next) => {
   try {
@@ -148,7 +149,7 @@ export const getCompaniesData = async (req, res, next) => {
 
 export const getCompanyData = async (req, res, next) => {
   try {
-    const companyId = req.params;
+    const { companyId } = req.params;
     const companyData = await Company.findOne({ _id: companyId }).lean().exec();
     const reviews = await Review.find({ company: companyId }).lean().exec();
     const poc = await PointOfContact.findOne({
@@ -191,6 +192,97 @@ export const getUniqueDataLocations = async (req, res, next) => {
     );
 
     return res.status(200).json(finalizedLocations);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addCompanyImage = async (req, res, next) => {
+  try {
+    const file = req.file;
+    const { type = "", companyId, businessId, companyType = "" } = req.body;
+
+    if (!file) {
+      return res.status(400).json({ message: "No file provided" });
+    }
+
+    const normalizedType = String(type).toLowerCase();
+    if (!["logo", "image", "images"].includes(normalizedType)) {
+      return res
+        .status(400)
+        .json({ message: "Invalid type. Use 'logo' or 'image'." });
+    }
+
+    let company;
+    if (companyId) {
+      company = await Company.findById(companyId).exec();
+    } else if (businessId) {
+      company = await Company.findOne({ businessId }).exec();
+    } else {
+      return res
+        .status(400)
+        .json({ message: "Provide companyId or businessId" });
+    }
+
+    if (!company) {
+      return res.status(404).json({ message: "No such company found" });
+    }
+
+    if (
+      companyType &&
+      company.companyType?.toLowerCase() !== companyType.toLowerCase()
+    ) {
+      return res
+        .status(400)
+        .json({ message: "companyType does not match the stored company" });
+    }
+
+    // Hyphen fix: privatestay → private-stay
+    const formatCompanyType = (type) => {
+      if (!type) return "unknown";
+      if (type.toLowerCase() === "privatestay") return "private-stay";
+      return type.toLowerCase();
+    };
+
+    const folderType = normalizedType === "logo" ? "logo" : "images";
+    const pathCompanyType = formatCompanyType(
+      companyType || company.companyType
+    );
+    const safeCompanyName =
+      (company.companyName || "unnamed").replace(/[^\w\- ]+/g, "").trim() ||
+      "unnamed";
+
+    const folderPath = `nomads/${pathCompanyType}/${safeCompanyName}`;
+    const s3Key = `${folderPath}/${folderType}/${file.originalname}`;
+
+    let uploadedUrl;
+    try {
+      uploadedUrl = await uploadFileToS3(s3Key, file);
+    } catch (err) {
+      return res.status(500).json({ message: "Failed to upload image to S3" });
+    }
+
+    if (folderType === "logo") {
+      company.logo = uploadedUrl;
+    } else {
+      if (!Array.isArray(company.images)) company.images = [];
+      company.images.push({
+        url: uploadedUrl,
+        index: company.images.length + 1,
+      });
+    }
+
+    await company.save({ validateBeforeSave: false });
+
+    return res.status(200).json({
+      message: `Successfully uploaded ${pathCompanyType} company ${folderType}`,
+      data: {
+        companyId: company._id,
+        businessId: company.businessId,
+        type: folderType,
+        url: uploadedUrl,
+      },
+    });
   } catch (error) {
     next(error);
   }
