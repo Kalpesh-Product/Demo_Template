@@ -140,7 +140,7 @@ export const getCompaniesData = async (req, res, next) => {
 
     const companyData = enrichCompanies(filteredCompanies);
 
-    res.status(200).json({ success: true, companyData });
+    res.status(200).json(companyData);
   } catch (error) {
     next(error);
   }
