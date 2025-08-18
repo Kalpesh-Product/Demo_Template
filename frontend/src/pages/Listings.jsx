@@ -93,7 +93,7 @@ const Listings = () => {
       const { country, location, category } = formData || {};
 
       const response = await axios.get(
-        `common/location-and-type-based-company-data?country=${country}&state=${location}&category=${category}`
+        `company/companies?country=${country}&state=${location}&type=${category}&category=${category}`
       );
 
       // return response.data;
