@@ -159,9 +159,9 @@ export const getCompanyData = async (req, res, next) => {
       .lean()
       .exec();
     return res.status(200).json({
-      ...companyData,
+      company: companyData,
       reviews,
-      ...poc,
+      poc,
     });
   } catch (error) {
     next(error);
@@ -237,17 +237,26 @@ export const addCompanyImage = async (req, res, next) => {
         .json({ message: "companyType does not match the stored company" });
     }
 
-    // Hyphen fix: privatestay → private-stay
     const formatCompanyType = (type) => {
-      if (!type) return "unknown";
-      if (type.toLowerCase() === "privatestay") return "private-stay";
-      return type.toLowerCase();
+      const map = {
+        hostel: "hostels",
+        privatestay: "private-stay",
+        meetingroom: "meetingroom",
+        coworking: "coworking",
+        cafe: "cafe",
+        coliving: "coliving",
+        workation: "workation",
+      };
+
+      const key = String(type || "").toLowerCase();
+      return map[key] || "unknown";
     };
 
     const folderType = normalizedType === "logo" ? "logo" : "images";
     const pathCompanyType = formatCompanyType(
       companyType || company.companyType
     );
+
     const safeCompanyName =
       (company.companyName || "unnamed").replace(/[^\w\- ]+/g, "").trim() ||
       "unnamed";
