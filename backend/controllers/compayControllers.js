@@ -158,7 +158,6 @@ export const getCompanyData = async (req, res, next) => {
       .lean()
       .exec();
     return res.status(200).json({
-      success: true,
       ...companyData,
       reviews,
       ...poc,
