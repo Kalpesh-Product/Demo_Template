@@ -140,7 +140,7 @@ export const getCompaniesData = async (req, res, next) => {
 
     const companyData = enrichCompanies(filteredCompanies);
 
-    res.status(200).json({ success: true, data: companyData });
+    res.status(200).json({ success: true, companyData });
   } catch (error) {
     next(error);
   }
@@ -158,6 +158,7 @@ export const getCompanyData = async (req, res, next) => {
       .lean()
       .exec();
     return res.status(200).json({
+      success: true,
       ...companyData,
       reviews,
       ...poc,
