@@ -2,6 +2,9 @@ import React, { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { Drawer } from "@mui/material";
 import { IoCloseSharp } from "react-icons/io5";
+import PrimaryButton from "./PrimaryButton";
+import logo from "../assets/WONO_LOGO_Black_TP.png";
+import SecondaryButton from "./SecondaryButton";
 import { useLocation } from "react-router-dom";
 
 const Header = () => {
@@ -55,14 +58,14 @@ const Header = () => {
       <div
         onClick={() => navigate("/")}
         className="w-24 lg:w-36 overflow-x-hidden rounded-lg flex justify-between items-center cursor-pointer">
-        <img src={""} alt={"logo"} className="w-full h-full object-contain" />
+        <img src={logo} alt={"logo"} className="w-full h-full object-contain" />
       </div>
 
       {!hideMapListLinks && (
         <div>
           <ul className="hidden xl:flex sm:hidden gap-8 pl-20 justify-center flex-1">
             <>
-                 <li  className="flex items-center">
+              <li className="flex items-center">
                 {!["Signup"].includes("Nomad") && (
                   <div className="p-4 px-0 whitespace-nowrap">
                     <Link
@@ -71,7 +74,7 @@ const Header = () => {
                       <span className="relative z-10 group-hover:font-bold mb-8">
                         Nomad
                       </span>
-                      <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                      <span className="absolute left-0 bottom-0 top-6  w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
                     </Link>
                   </div>
                 )}
@@ -88,7 +91,7 @@ const Header = () => {
                           <span className="relative z-10 group-hover:font-bold mb-2">
                             Map view
                           </span>
-                          <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                          <span className="absolute left-0 bottom-0 top-6 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
                         </Link>
                       </div>
                     </li>
@@ -103,7 +106,7 @@ const Header = () => {
                           <span className="relative z-10 group-hover:font-bold mb-2">
                             List view
                           </span>
-                          <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                          <span className="absolute left-0 bottom-0 top-6 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
                         </Link>
                       </div>
                     </li>
@@ -121,7 +124,7 @@ const Header = () => {
                           <span className="relative z-10 group-hover:font-bold mb-2">
                             List view
                           </span>
-                          <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                          <span className="absolute left-0 bottom-0 top-6 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
                         </Link>
                       </div>
                     </li>
@@ -141,7 +144,7 @@ const Header = () => {
                       <span className="relative z-10 group-hover:font-bold mb-8">
                         {item.text}
                       </span>
-                      <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                      <span className="absolute left-0 bottom-0 top-6 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
                     </Link>
                   </div>
                 )}
@@ -164,7 +167,7 @@ const Header = () => {
                     <span className="relative z-10 group-hover:font-bold mb-8">
                       {item.text}
                     </span>
-                    <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                    <span className="absolute left-0 bottom-0 top-6 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
                   </Link>
                 </div>
               </li>
@@ -183,10 +186,21 @@ const Header = () => {
               <span className="relative z-10 group-hover:font-bold mb-8">
                 Become a host
               </span>
-              <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+              <span className="absolute left-0 bottom-0 top-6 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
             </a>
           </div>
         </li>
+
+        <div className="px-1 hidden xl:flex xl:gap-4 py-2">
+          <PrimaryButton
+            title={"Login"}
+            padding={"py-1"}
+            handleSubmit={() => navigate("/nomad/login")}
+            className={
+              "bg-[#FF5757]  flex text-white font-[500] capatilize hover:bg-[#E14C4C] w-[7rem] px-6"
+            }
+          />
+        </div>
         {/* <div className="px-1 hidden xl:flex gap-2">
           <SecondaryButton
             title={"SIGN UP"}
@@ -223,19 +237,20 @@ const Header = () => {
                 <IoCloseSharp />
               </span>
             </div>
-            
 
             {!hideMapListLinks && (
               <div>
                 <ul className=" xl:flex gap-8  justify-center flex-1">
                   <>
-                     <li  className="items-center text-center">
-                <div onClick={() => handleNavigation("/nomad")} className="py-4">
-                  <p className="text-secondary-dark text-lg">Nomad</p>
-                </div>
-                <div className="h-[0.2px] bg-gray-300"></div>
-              </li>
-                  
+                    <li className="items-center text-center">
+                      <div
+                        onClick={() => handleNavigation("/nomad")}
+                        className="py-4">
+                        <p className="text-secondary-dark text-lg">Nomad</p>
+                      </div>
+                      <div className="h-[0.2px] bg-gray-300"></div>
+                    </li>
+
                     {/* Case 1: It's a /nomad/:country/:state page */}
                     {isNomadLocation ? (
                       <>
@@ -249,7 +264,7 @@ const Header = () => {
                                 <span className="relative z-10 group-hover:font-bold mb-2">
                                   Map view
                                 </span>
-                                <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                                <span className="absolute left-0 bottom-0 top-6 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
                               </Link>
                             </div>
                             <div className="h-[0.2px] bg-gray-300 w-full"></div>
@@ -266,7 +281,7 @@ const Header = () => {
                                 <span className="relative z-10 group-hover:font-bold mb-2">
                                   List view
                                 </span>
-                                <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                                <span className="absolute left-0 bottom-0 top-6 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
                               </Link>
                             </div>
                             <div className="h-[0.2px] bg-gray-300 w-full"></div>
@@ -285,7 +300,7 @@ const Header = () => {
                                 <span className="relative z-10 group-hover:font-bold mb-2">
                                   List view
                                 </span>
-                                <span className="absolute left-0 bottom-0 w-0 h-[1px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
+                                <span className="absolute left-0 bottom-0 top-6 w-0 h-[2px] bg-blue-500 transition-all duration-300 group-hover:w-full"></span>
                               </Link>
                             </div>
                           </li>
@@ -304,7 +319,7 @@ const Header = () => {
                 <div className="h-[0.2px] bg-gray-300"></div>
               </li>
             ))}
-            {/* <div className="flex justify-center p-4">
+            <div className="flex justify-center p-4">
               <PrimaryButton
                 title={"Sign In"}
                 externalStyles={"bg-primary-blue"}
@@ -313,7 +328,7 @@ const Header = () => {
                   setOpen(false);
                 }}
               />
-            </div> */}
+            </div>
           </ul>
 
           {/* Footer */}

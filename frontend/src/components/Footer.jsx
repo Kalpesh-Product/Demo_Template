@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import logo from "../assets/WONO_LOGO_Black_TP.png";
 import { FaTwitter, FaLinkedinIn } from "react-icons/fa";
 import { FaGlobe, FaRupeeSign, FaFacebookF, FaInstagram } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
@@ -42,7 +43,7 @@ const Footer = () => {
         <div className="flex flex-col w-full lg:w-fit justify-center items-center md:flex-1 md:justify-center md:items-center lg:justify-start lg:items-start mb-8 lg:mb-0">
           <div className="w-full md:w-80 h-full flex flex-col lg:justify-start lg:items-start justify-center items-center">
             <img
-              src={""}
+              src={logo}
               onClick={() => {
                 navigate("/home");
                 window.scrollTo({ top: 0, behavior: "instant" });
