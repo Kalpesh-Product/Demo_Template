@@ -150,23 +150,32 @@ export const getCompaniesData = async (req, res, next) => {
 export const getCompanyData = async (req, res, next) => {
   try {
     const { companyId } = req.params;
-    const companyData = await Company.findOne({ _id: companyId }).lean().exec();
-    const reviews = await Review.find({ company: companyId }).lean().exec();
-    const poc = await PointOfContact.findOne({
-      company: companyId,
-      isActive: true,
-    })
-      .lean()
-      .exec();
+
+    // Grab everything in parallel. No need to wait on serial I/O like it’s dial-up.
+    const [companyData, reviews, poc] = await Promise.all([
+      Company.findById(companyId).lean().exec(),
+      Review.find({ company: companyId }).lean().exec(),
+      PointOfContact.findOne({ company: companyId, isActive: true }).lean().exec(),
+    ]);
+
+    // If you actually care about 404s instead of ghosting the frontend:
+    if (!companyData) {
+      return res.status(404).json({ error: "Company not found" });
+    }
+
+    // ONE object, safe spreads. If poc is null, it just stays null.
     return res.status(200).json({
-      company: companyData,
-      reviews,
-      poc,
+      ...companyData,   // base fields on the top level
+      reviews,          // array
+      poc,              // object or null
     });
   } catch (error) {
+    // Log it so you’re not debugging in the dark at 2 AM
+    console.error("getCompanyData error:", error);
     next(error);
   }
 };
+
 
 export const getUniqueDataLocations = async (req, res, next) => {
   try {
