@@ -171,15 +171,23 @@ export const getUniqueDataLocations = async (req, res, next) => {
   try {
     const companies = await Company.find().lean().exec();
 
-    const locations = companies.map((company) => ({
-      country: company.country,
-      state: company.state,
-    }));
+    const countryMap = new Map();
 
-    const uniqueSet = new Set(locations.map((loc) => JSON.stringify(loc)));
+    for (const company of companies) {
+      const country = company.country;
+      const state = company.state;
 
-    const finalizedLocations = Array.from(uniqueSet).map((loc) =>
-      JSON.parse(loc)
+      if (!countryMap.has(country)) {
+        countryMap.set(country, new Set()); // use Set for unique states
+      }
+      countryMap.get(country).add(state);
+    }
+
+    const finalizedLocations = Array.from(countryMap.entries()).map(
+      ([country, statesSet]) => ({
+        country,
+        states: Array.from(statesSet), // convert Set to array
+      })
     );
 
     return res.status(200).json(finalizedLocations);
