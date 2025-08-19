@@ -8,6 +8,7 @@ import companyRoutes from "./routes/companyRoutes.js";
 import pocRoutes from "./routes/pocRoutes.js";
 import reviewRoutes from "./routes/ReviewRoutes.js";
 import formRoutes from "./routes/formRoutes.js";
+import jobRoutes from "./routes/jobRoutes.js";
 import connectDb from "./config/db.js";
 
 const app = express();
@@ -23,6 +24,7 @@ app.use("/api/company", companyRoutes);
 app.use("/api/poc", pocRoutes);
 app.use("/api/review", reviewRoutes);
 app.use("/api/forms", formRoutes);
+app.use("/api/job", jobRoutes);
 
 app.all("/*splat", (req, res) => {
   if (req.accepts("html")) {
