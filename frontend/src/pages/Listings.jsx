@@ -76,7 +76,7 @@ const Listings = () => {
     // { label: "Co-Living", value: "coliving" },
     { label: "Hostels", value: "hostel" },
     { label: "Workation", value: "workation" },
-    { label: "Private Stay", value: "privateStay" },
+    { label: "Private Stay", value: "privatestay" },
     { label: "Meetings", value: "meetingRoom" },
     { label: "Cafe’s", value: "cafe" },
   ];

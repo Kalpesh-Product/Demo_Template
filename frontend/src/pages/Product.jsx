@@ -43,17 +43,22 @@ const Product = () => {
     queryKey: ["companyDetails", companyId],
     queryFn: async () => {
       const response = await axios.get(
-        `common/individual-company?companyId=${companyId}&&type=${type}`
+        `company/get-single-company-data/${companyId}`
       );
-      return response.data;
+      return response?.data;
     },
-    enabled: !!companyId && !!type,
+    enabled: !!companyId,
   });
 
   console.log("companuDetials ", companyDetails);
   const companyImages = companyDetails?.images?.slice(0, 4) || [];
   const showMore = (companyDetails?.images?.length || 0) > 4;
-  const inclusions = companyDetails?.inclusions || [];
+  const inclusions =
+    companyDetails?.inclusions?.split(",").map((item) => {
+     return item?.split(" ")?.length
+        ? item?.split(" ").join("")?.trim()
+        : item?.trim();
+    }) || [];
 
   // const total = allAmenities.length;
   // const columns = 6;
@@ -146,7 +151,7 @@ const Product = () => {
 
   const reviewData = isCompanyDetails
     ? []
-    : companyDetails?.reviews.map((item) => ({
+    : companyDetails?.reviews?.map((item) => ({
         ...item,
         stars: item.starCount,
         message: item.description,
@@ -159,7 +164,7 @@ const Product = () => {
     lng: companyDetails?.longitude,
     name: companyDetails?.companyName,
     location: companyDetails?.city,
-    reviews: companyDetails?.reviewCount,
+    reviews: companyDetails?.totalReviews,
     ratings: companyDetails?.ratings,
     image:
       companyDetails?.images?.[0]?.url ||
@@ -227,7 +232,7 @@ const Product = () => {
 
               {/* Thumbnail Images */}
               <div className="grid grid-cols-2 gap-1">
-                {companyDetails?.images?.slice(1,5).map((item, index) => (
+                {companyDetails?.images?.slice(1, 5).map((item, index) => (
                   <div
                     key={item._id}
                     className={`relative w-full h-56 overflow-hidden rounded-md cursor-pointer border-2 ${
@@ -383,7 +388,9 @@ const Product = () => {
 
                   <div className="flex flex-col gap-4 lg:gap-0 justify-center items-center">
                     <p className="text-subtitle lg:text-subtitle mt-1">
-                      {companyDetails?.reviewCount || companyDetails?.totalReviews || 0}
+                      {companyDetails?.reviewCount ||
+                        companyDetails?.totalReviews ||
+                        0}
                     </p>
                     <span className="text-small font-medium">Reviews</span>
                   </div>
@@ -579,7 +586,7 @@ const Product = () => {
             ) : (
               <div className="flex flex-col gap-10 w-full">
                 <AmenitiesList
-                  type={companyDetails?.type.toLowerCase() || ""}
+                  type={companyDetails?.companyType.toLowerCase() || ""}
                   inclusions={inclusions}
                 />
                 {/* <div className="flex justify-end">

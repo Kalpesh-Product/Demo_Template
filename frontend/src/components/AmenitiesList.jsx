@@ -20,7 +20,7 @@ const fixedAmenitiesMap = {
     "Cafeteria",
     "Printing Services",
     "CCTV Secure",
-    "Water Purifier",
+    "Purified Water",
     "Custom Solutions",
   ],
   coliving: [

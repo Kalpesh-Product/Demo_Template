@@ -16,7 +16,7 @@ const ListingCard = ({ item, handleNavigation, showVertical=true }) => {
     coworking: "CoWorking",
     coliving: "CoLiving",
     hostel: "Hostel",
-    privateStay: "Private Stay",
+    privatestay: "Private Stay",
     cafe: "Cafe",
   };
 
