@@ -115,7 +115,7 @@ export const getCompaniesData = async (req, res, next) => {
     if (type && country && state) {
       filteredCompanies = companies.filter(
         (company) =>
-          company.companyType === type &&
+          company.companyType === type?.toLowerCase() &&
           company.country?.toLowerCase() === country.toLowerCase() &&
           company.state?.toLowerCase() === state.toLowerCase()
       );
