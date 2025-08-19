@@ -151,23 +151,22 @@ export const getCompanyData = async (req, res, next) => {
   try {
     const { companyId } = req.params;
 
-    // Grab everything in parallel. No need to wait on serial I/O like it’s dial-up.
     const [companyData, reviews, poc] = await Promise.all([
       Company.findById(companyId).lean().exec(),
       Review.find({ company: companyId }).lean().exec(),
-      PointOfContact.findOne({ company: companyId, isActive: true }).lean().exec(),
+      PointOfContact.findOne({ company: companyId, isActive: true })
+        .lean()
+        .exec(),
     ]);
 
-    // If you actually care about 404s instead of ghosting the frontend:
     if (!companyData) {
       return res.status(404).json({ error: "Company not found" });
     }
 
-    // ONE object, safe spreads. If poc is null, it just stays null.
     return res.status(200).json({
-      ...companyData,   // base fields on the top level
-      reviews,          // array
-      poc,              // object or null
+      ...companyData, // base fields on the top level
+      reviews, // array
+      poc, // object or null
     });
   } catch (error) {
     // Log it so you’re not debugging in the dark at 2 AM
@@ -175,7 +174,6 @@ export const getCompanyData = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const getUniqueDataLocations = async (req, res, next) => {
   try {
@@ -270,7 +268,7 @@ export const addCompanyImage = async (req, res, next) => {
       (company.companyName || "unnamed").replace(/[^\w\- ]+/g, "").trim() ||
       "unnamed";
 
-    const folderPath = `nomads/${pathCompanyType}/${safeCompanyName}`;
+    const folderPath = `nomads/${pathCompanyType}/${company.country}/${safeCompanyName}`;
     const s3Key = `${folderPath}/${folderType}/${file.originalname}`;
 
     let uploadedUrl;
@@ -299,6 +297,125 @@ export const addCompanyImage = async (req, res, next) => {
         businessId: company.businessId,
         type: folderType,
         url: uploadedUrl,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const addCompanyImagesBulk = async (req, res, next) => {
+  try {
+    const files = req.files;
+    const { companyId, businessId, companyType = "" } = req.body;
+
+    if (!files || !files.length) {
+      return res.status(400).json({ message: "No files provided" });
+    }
+
+    let company;
+    if (companyId) {
+      company = await Company.findById(companyId).exec();
+    } else if (businessId) {
+      company = await Company.findOne({ businessId }).exec();
+    } else {
+      return res
+        .status(400)
+        .json({ message: "Provide companyId or businessId" });
+    }
+
+    if (!company) {
+      return res.status(404).json({ message: "No such company found" });
+    }
+
+    if (
+      companyType &&
+      company.companyType?.toLowerCase() !== String(companyType).toLowerCase()
+    ) {
+      return res
+        .status(400)
+        .json({ message: "companyType does not match the stored company" });
+    }
+
+    const formatCompanyType = (type) => {
+      const map = {
+        hostel: "hostels",
+        privatestay: "private-stay",
+        meetingroom: "meetingroom",
+        coworking: "coworking",
+        cafe: "cafe",
+        coliving: "coliving",
+        workation: "workation",
+      };
+      const key = String(type || "").toLowerCase();
+      return map[key] || "unknown";
+    };
+
+    const pathCompanyType = formatCompanyType(
+      companyType || company.companyType
+    );
+
+    const safeCompanyName =
+      (company.companyName || "unnamed").replace(/[^\w\- ]+/g, "").trim() ||
+      "unnamed";
+
+    const folderPath = `nomads/${pathCompanyType}/${company.country}/${safeCompanyName}`;
+    const folderType = "images";
+
+    if (!Array.isArray(company.images)) company.images = [];
+    const startIndex = company.images.length;
+
+    const sanitizeFileName = (name) =>
+      String(name || "file")
+        .replace(/[/\\?%*:|"<>]/g, "_")
+        .replace(/\s+/g, "_");
+
+    const results = await Promise.allSettled(
+      files.map(async (file, i) => {
+        const uniqueKey = `${folderPath}/${folderType}/${sanitizeFileName(
+          file.originalname
+        )}`;
+        const uploadedUrl = await uploadFileToS3(uniqueKey, file);
+        return {
+          url: uploadedUrl,
+          index: startIndex + i + 1,
+          originalName: file.originalname,
+          key: uniqueKey,
+        };
+      })
+    );
+
+    // Split successes and failures
+    const successes = [];
+    const failures = [];
+
+    for (const r of results) {
+      if (r.status === "fulfilled") successes.push(r.value);
+      else failures.push({ reason: r.reason?.message || "Unknown error" });
+    }
+
+    // Append successful uploads to the company doc
+    if (successes.length) {
+      company.images.push(
+        ...successes.map((s) => ({ url: s.url, index: s.index }))
+      );
+      // Skip validators to avoid tripping on unrelated fields
+      await company.save({ validateBeforeSave: false });
+    }
+
+    return res.status(failures.length ? 207 : 200).json({
+      message:
+        failures.length && successes.length
+          ? `Uploaded ${successes.length} images; ${failures.length} failed`
+          : failures.length
+          ? "All uploads failed"
+          : `Successfully uploaded ${successes.length} images`,
+      data: {
+        companyId: company._id,
+        businessId: company.businessId,
+        type: folderType,
+        uploaded: successes,
+        failed: failures,
       },
     });
   } catch (error) {
